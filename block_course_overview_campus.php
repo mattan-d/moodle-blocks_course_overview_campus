@@ -176,13 +176,25 @@ class block_course_overview_campus extends block_base {
 
         // Set and remember top level category filter if GET parameter is present.
         if ($coc_config->toplevelcategorycoursefilter == true) {
+            $defaulttoplevelcategory = 'all';
+            if (!empty($coc_config->defaulttoplevelcategory)) {
+                $defaulttoplevelcategory = $coc_config->defaulttoplevelcategory;
+            }
+            // True when the selection comes from the admin default and was not stored for this user yet.
+            $toplevelcategoryfromdefault = false;
             if ($param_toplevelcategory != null) {
                 $selectedtoplevelcategory = $param_toplevelcategory;
                 set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $param_toplevelcategory);
             }
-            // Or set top level category filter based on user preference with 'all' categories fallback.
+            // Or set top level category filter based on user preference, falling back to the configured default category.
             else {
-                $selectedtoplevelcategory = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory', 'all');
+                $storedtoplevelcategory = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory');
+                if ($storedtoplevelcategory === null) {
+                    $selectedtoplevelcategory = $defaulttoplevelcategory;
+                    $toplevelcategoryfromdefault = true;
+                } else {
+                    $selectedtoplevelcategory = $storedtoplevelcategory;
+                }
             }
         }
 
@@ -950,11 +962,18 @@ class block_course_overview_campus extends block_base {
 
                     echo '</select>';
 
-                    // If selected top level category couldn't be displayed, select all categories and save the new selection.
+                    // If selected top level category couldn't be displayed, select all categories.
+                    // A stored selection is replaced. The admin default is left unsaved so it can apply
+                    // once the user is enrolled in courses of that category.
                     // In this case, no option item is marked as selected, but that's ok as the "all" item is at the top.
                     if (!$selectedtoplevelcategorydisplayed) {
                         $selectedtoplevelcategory = 'all';
-                        set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $selectedtoplevelcategory);
+                        if (empty($toplevelcategoryfromdefault)) {
+                            set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $selectedtoplevelcategory);
+                        }
+                        foreach ($courses as $course) {
+                            $course->toplevelcategorycoursefiltered = false;
+                        }
                     }
 
                     echo '</div>';

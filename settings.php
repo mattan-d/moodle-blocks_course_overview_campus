@@ -301,6 +301,20 @@ if ($hassiteconfig) {
                 get_string('toplevelcategory', 'block_course_overview_campus', null, true),
                 PARAM_TEXT));
 
+        // Top level category filter: Default category.
+        global $DB;
+        $defaulttoplevelcategorychoices = array('all' => get_string('all', 'block_course_overview_campus', null, true));
+        $toplevelcategories = $DB->get_records('course_categories', array('parent' => 0), 'sortorder ASC', 'id, name');
+        foreach ($toplevelcategories as $toplevelcategory) {
+            $defaulttoplevelcategorychoices[$toplevelcategory->id] = format_string($toplevelcategory->name, true, array('escape' => false));
+        }
+
+        $settingspage->add(new admin_setting_configselect('block_course_overview_campus/defaulttoplevelcategory',
+                get_string('defaulttoplevelcategory', 'block_course_overview_campus', null, true),
+                get_string('defaulttoplevelcategory_desc', 'block_course_overview_campus', null, true),
+                'all',
+                $defaulttoplevelcategorychoices));
+
         // Add settings page to the admin settings category.
         $ADMIN->add('block_course_overview_campus', $settingspage);
 
