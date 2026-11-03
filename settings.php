@@ -315,6 +315,13 @@ if ($hassiteconfig) {
                 'all',
                 $defaulttoplevelcategorychoices));
 
+        $resetpreferences = new admin_setting_configcheckbox('block_course_overview_campus/resettoplevelcategorypreferences',
+                get_string('resettoplevelcategorypreferences', 'block_course_overview_campus', null, true),
+                get_string('resettoplevelcategorypreferences_desc', 'block_course_overview_campus', null, true),
+                0);
+        $resetpreferences->set_updatedcallback('block_course_overview_campus_reset_saved_toplevelcategories');
+        $settingspage->add($resetpreferences);
+
         // Add settings page to the admin settings category.
         $ADMIN->add('block_course_overview_campus', $settingspage);
 

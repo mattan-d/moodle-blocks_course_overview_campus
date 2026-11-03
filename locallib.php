@@ -147,6 +147,39 @@ function block_course_overview_campus_resolve_selected_toplevelcategory($coc_con
 
 
 /**
+ * Delete every user's saved top level category so the configured default is shown again.
+ *
+ * Runs when the reset checkbox is turned on. The checkbox is switched off afterwards.
+ */
+function block_course_overview_campus_reset_saved_toplevelcategories() {
+    global $DB, $USER;
+
+    if (!get_config('block_course_overview_campus', 'resettoplevelcategorypreferences')) {
+        return;
+    }
+
+    $names = array(
+        'block_course_overview_campus-selectedtoplevelcategory',
+        'block_course_overview_campus-toplevelcategoryexplicit',
+    );
+    list($insql, $params) = $DB->get_in_or_equal($names, SQL_PARAMS_NAMED);
+    $userids = $DB->get_fieldset_sql("SELECT DISTINCT userid FROM {user_preferences} WHERE name $insql", $params);
+    $DB->delete_records_list('user_preferences', 'name', $names);
+
+    foreach ($userids as $userid) {
+        mark_user_preferences_changed($userid);
+    }
+    if (!empty($USER->preference)) {
+        unset($USER->preference['block_course_overview_campus-selectedtoplevelcategory']);
+        unset($USER->preference['block_course_overview_campus-toplevelcategoryexplicit']);
+    }
+
+    set_config('resettoplevelcategorypreferences', 0, 'block_course_overview_campus');
+    \core\notification::success(get_string('resettoplevelcategorypreferences_done', 'block_course_overview_campus', count($userids)));
+}
+
+
+/**
  * Check if course is hidden according to the top level category course filter
  *
  * @param course $course
