@@ -189,15 +189,31 @@ define(['jquery'], function($) {
             }
 
             // Show the resolved top level category in the filter select.
+            var $topLevelCategory = $('#coc-filtertoplevelcategory');
+            var topLevelOptions = [];
+            $topLevelCategory.find('option').each(function() {
+                topLevelOptions.push({
+                    value: $(this).val(),
+                    text: $(this).text(),
+                    selected: $(this).is(':selected')
+                });
+            });
+            var topLevelBefore = $topLevelCategory.val();
             if (params.initialsettings &&
                     params.initialsettings.toplevelcategory !== undefined &&
                     params.initialsettings.toplevelcategory !== null &&
-                    params.initialsettings.toplevelcategory !== '') {
-                var $topLevelCategory = $('#coc-filtertoplevelcategory');
-                if ($topLevelCategory.length) {
-                    $topLevelCategory.val(String(params.initialsettings.toplevelcategory));
-                }
+                    params.initialsettings.toplevelcategory !== '' &&
+                    $topLevelCategory.length) {
+                $topLevelCategory.val(String(params.initialsettings.toplevelcategory));
             }
+            console.log('[course_overview_campus] ברירת מחדל לקטגוריית על', params.toplevelcategorydebug || null);
+            console.log('[course_overview_campus] שדה coc-filtertoplevelcategory', {
+                exists: $topLevelCategory.length > 0,
+                valueBefore: topLevelBefore,
+                requested: params.initialsettings ? params.initialsettings.toplevelcategory : null,
+                valueAfter: $topLevelCategory.val(),
+                options: topLevelOptions
+            });
 
             // Make sure any initial filter settings are applied (may be needed if the user
             // has used the browser 'back' button).

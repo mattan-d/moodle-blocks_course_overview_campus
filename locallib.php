@@ -111,7 +111,7 @@ function block_course_overview_campus_course_hidden_by_categorycoursefilter($cou
  *
  * @param stdClass $coc_config
  * @param string|null $param Request parameter coc-toplevelcategory
- * @return array [string $selected, bool $fromdefault]
+ * @return array [string $selected, bool $fromdefault, string $reason]
  */
 function block_course_overview_campus_resolve_selected_toplevelcategory($coc_config, $param = null) {
     $default = 'all';
@@ -123,23 +123,26 @@ function block_course_overview_campus_resolve_selected_toplevelcategory($coc_con
         $selected = (string)$param;
         set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $selected);
         set_user_preference('block_course_overview_campus-toplevelcategoryexplicit', 1);
-        return array($selected, false);
+        return array($selected, false, 'request-param');
     }
 
     $stored = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory');
     $explicit = get_user_preferences('block_course_overview_campus-toplevelcategoryexplicit');
 
     if (!empty($explicit) && $stored !== null && $stored !== '') {
-        return array((string)$stored, false);
+        return array((string)$stored, false, 'explicit-user-choice');
     }
 
     // Keep a category the user already picked.
     if ($stored !== null && $stored !== '' && (string)$stored !== 'all') {
-        return array((string)$stored, false);
+        return array((string)$stored, false, 'stored-specific-category');
     }
 
     // Nothing chosen yet: the select shows the configured default category.
-    return array($default, true);
+    if ($default === 'all') {
+        return array($default, true, 'no-default-configured');
+    }
+    return array($default, true, 'configured-default');
 }
 
 

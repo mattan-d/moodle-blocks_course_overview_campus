@@ -177,9 +177,30 @@ class block_course_overview_campus extends block_base {
         // Set the top level category shown in #coc-filtertoplevelcategory.
         // The configured default is selected until the user chooses a category.
         if ($coc_config->toplevelcategorycoursefilter == true) {
-            list($selectedtoplevelcategory, $toplevelcategoryfromdefault) = block_course_overview_campus_resolve_selected_toplevelcategory(
+            list($selectedtoplevelcategory, $toplevelcategoryfromdefault, $toplevelcategoryreason) = block_course_overview_campus_resolve_selected_toplevelcategory(
                     $coc_config, $param_toplevelcategory);
             $selectedtoplevelcategory = (string)$selectedtoplevelcategory;
+            $storedtoplevelcategory = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory');
+            $toplevelcategoryexplicit = get_user_preferences('block_course_overview_campus-toplevelcategoryexplicit');
+            $toplevelcategoryreasons = array(
+                'request-param' => 'הערך הגיע מפרמטר בכתובת, לא מהגדרת ברירת המחדל.',
+                'explicit-user-choice' => 'למשתמש יש בחירה שמורה אחרי שינוי השדה. הגדרת ברירת המחדל לא דורסת אותה.',
+                'stored-specific-category' => 'למשתמש שמורה קטגוריה ספציפית. הגדרת ברירת המחדל לא דורסת אותה.',
+                'configured-default' => 'נבחרה קטגוריית ברירת המחדל מהגדרות התוסף.',
+                'no-default-configured' => 'אין ברירת מחדל שמורה בהגדרות, או שהערך הוא all.',
+            );
+            $coc_topleveldebug = array(
+                'configuredDefault' => isset($coc_config->defaulttoplevelcategory) ? (string)$coc_config->defaulttoplevelcategory : '',
+                'storedPreference' => $storedtoplevelcategory === null ? null : (string)$storedtoplevelcategory,
+                'explicitChoice' => $toplevelcategoryexplicit === null ? null : (string)$toplevelcategoryexplicit,
+                'reason' => $toplevelcategoryreason,
+                'message' => isset($toplevelcategoryreasons[$toplevelcategoryreason]) ? $toplevelcategoryreasons[$toplevelcategoryreason] : $toplevelcategoryreason,
+                'resolvedSelection' => $selectedtoplevelcategory,
+                'selectRendered' => false,
+                'optionFound' => false,
+                'finalSelection' => $selectedtoplevelcategory,
+                'availableCategoryIds' => array(),
+            );
         }
 
 
@@ -958,7 +979,12 @@ class block_course_overview_campus extends block_base {
                         foreach ($courses as $course) {
                             $course->toplevelcategorycoursefiltered = false;
                         }
+                        $coc_topleveldebug['message'] .= ' הקטגוריה לא נמצאת באפשרויות של המשתמש, לכן השדה נשאר על הכל.';
                     }
+                    $coc_topleveldebug['selectRendered'] = true;
+                    $coc_topleveldebug['optionFound'] = (bool)$selectedtoplevelcategorydisplayed;
+                    $coc_topleveldebug['finalSelection'] = (string)$selectedtoplevelcategory;
+                    $coc_topleveldebug['availableCategoryIds'] = isset($filtertoplevelcategories) ? array_map('strval', array_keys($filtertoplevelcategories)) : array();
 
                     echo '</div>';
                 }
@@ -1368,6 +1394,7 @@ class block_course_overview_campus extends block_base {
                         'category' => (isset($selectedcategory)) ? $selectedcategory : '',
                         'toplevelcategory' => (isset($selectedtoplevelcategory)) ? (string)$selectedtoplevelcategory : '',
                     ],
+                    'toplevelcategorydebug' => isset($coc_topleveldebug) ? $coc_topleveldebug : null,
                 ]; // Passing the initialsettings to the JS code is necessary for filtering the course list again when using browser 'back' button.
                 $PAGE->requires->js_call_amd('block_course_overview_campus/filter', 'initFilter', [$js_filteroptions]);
             }
