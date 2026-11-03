@@ -91,6 +91,10 @@ define(['jquery'], function($) {
 
         // Store the users selection (Uses AJAX to save to the database).
         M.util.set_user_preference('block_course_overview_campus-selectedtoplevelcategory', value);
+        // A real change means the user picked this value, including "all".
+        if (e !== undefined) {
+            M.util.set_user_preference('block_course_overview_campus-toplevelcategoryexplicit', 1);
+        }
     }
 
     /**
@@ -103,9 +107,10 @@ define(['jquery'], function($) {
             if (initialSettings.hasOwnProperty(setting)) {
                 value = initialSettings[setting];
                 $element = $('#coc-filter' + setting);
-                if ($element.length) {
+                if ($element.length && value !== '' && value !== null && value !== undefined) {
                     elementValue = $element.val();
-                    if (elementValue !== value) {
+                    if (String(elementValue) !== String(value)) {
+                        $element.val(String(value));
                         switch (setting) {
                             case 'term':
                                 filterTerm();
@@ -181,6 +186,17 @@ define(['jquery'], function($) {
             if (params.local_boostcoc == true) {
                 $('#coc-filterterm, #coc-filterteacher, #coc-filtercategory, #coc-filtertoplevelcategory').on('change',
                         localBoostCOCRememberNotShownCourses).on('change', localBoostCOCRememberActiveFilters);
+            }
+
+            // Show the resolved top level category in the filter select.
+            if (params.initialsettings &&
+                    params.initialsettings.toplevelcategory !== undefined &&
+                    params.initialsettings.toplevelcategory !== null &&
+                    params.initialsettings.toplevelcategory !== '') {
+                var $topLevelCategory = $('#coc-filtertoplevelcategory');
+                if ($topLevelCategory.length) {
+                    $topLevelCategory.val(String(params.initialsettings.toplevelcategory));
+                }
             }
 
             // Make sure any initial filter settings are applied (may be needed if the user

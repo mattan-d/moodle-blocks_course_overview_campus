@@ -103,6 +103,47 @@ function block_course_overview_campus_course_hidden_by_categorycoursefilter($cou
 
 
 /**
+ * Resolve the top level category shown in the filter select.
+ *
+ * The configured default is selected until the user chooses a category.
+ * A stored value of "all" is the previous implicit default and is replaced
+ * by the configured category. A stored specific category is kept.
+ *
+ * @param stdClass $coc_config
+ * @param string|null $param Request parameter coc-toplevelcategory
+ * @return array [string $selected, bool $fromdefault]
+ */
+function block_course_overview_campus_resolve_selected_toplevelcategory($coc_config, $param = null) {
+    $default = 'all';
+    if (!empty($coc_config->defaulttoplevelcategory)) {
+        $default = (string)$coc_config->defaulttoplevelcategory;
+    }
+
+    if ($param !== null && $param !== '') {
+        $selected = (string)$param;
+        set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $selected);
+        set_user_preference('block_course_overview_campus-toplevelcategoryexplicit', 1);
+        return array($selected, false);
+    }
+
+    $stored = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory');
+    $explicit = get_user_preferences('block_course_overview_campus-toplevelcategoryexplicit');
+
+    if (!empty($explicit) && $stored !== null && $stored !== '') {
+        return array((string)$stored, false);
+    }
+
+    // Keep a category the user already picked.
+    if ($stored !== null && $stored !== '' && (string)$stored !== 'all') {
+        return array((string)$stored, false);
+    }
+
+    // Nothing chosen yet: the select shows the configured default category.
+    return array($default, true);
+}
+
+
+/**
  * Check if course is hidden according to the top level category course filter
  *
  * @param course $course
@@ -407,8 +448,11 @@ function block_course_overview_campus_remember_activefilters_for_local_boostcoc(
         if ($coc_config->categorycoursefilter == true && get_user_preferences('block_course_overview_campus-selectedcategory') != 'all') {
             $activefilters[] = 'filtercategory';
         }
-        if ($coc_config->toplevelcategorycoursefilter == true && get_user_preferences('block_course_overview_campus-selectedtoplevelcategory') != 'all') {
-            $activefilters[] = 'filtertoplevelcategory';
+        if ($coc_config->toplevelcategorycoursefilter == true) {
+            list($selectedtoplevelcategory) = block_course_overview_campus_resolve_selected_toplevelcategory($coc_config);
+            if ($selectedtoplevelcategory != 'all') {
+                $activefilters[] = 'filtertoplevelcategory';
+            }
         }
         if ($coc_config->teachercoursefilter == true && get_user_preferences('block_course_overview_campus-selectedteacher') != 'all') {
             $activefilters[] = 'filterteacher';

@@ -174,28 +174,12 @@ class block_course_overview_campus extends block_base {
         }
 
 
-        // Set and remember top level category filter if GET parameter is present.
+        // Set the top level category shown in #coc-filtertoplevelcategory.
+        // The configured default is selected until the user chooses a category.
         if ($coc_config->toplevelcategorycoursefilter == true) {
-            $defaulttoplevelcategory = 'all';
-            if (!empty($coc_config->defaulttoplevelcategory)) {
-                $defaulttoplevelcategory = $coc_config->defaulttoplevelcategory;
-            }
-            // True when the selection comes from the admin default and was not stored for this user yet.
-            $toplevelcategoryfromdefault = false;
-            if ($param_toplevelcategory != null) {
-                $selectedtoplevelcategory = $param_toplevelcategory;
-                set_user_preference('block_course_overview_campus-selectedtoplevelcategory', $param_toplevelcategory);
-            }
-            // Or set top level category filter based on user preference, falling back to the configured default category.
-            else {
-                $storedtoplevelcategory = get_user_preferences('block_course_overview_campus-selectedtoplevelcategory');
-                if ($storedtoplevelcategory === null) {
-                    $selectedtoplevelcategory = $defaulttoplevelcategory;
-                    $toplevelcategoryfromdefault = true;
-                } else {
-                    $selectedtoplevelcategory = $storedtoplevelcategory;
-                }
-            }
+            list($selectedtoplevelcategory, $toplevelcategoryfromdefault) = block_course_overview_campus_resolve_selected_toplevelcategory(
+                    $coc_config, $param_toplevelcategory);
+            $selectedtoplevelcategory = (string)$selectedtoplevelcategory;
         }
 
 
@@ -940,8 +924,8 @@ class block_course_overview_campus extends block_base {
                     }
 
                     // Print "All categories" option.
-                    if ($selectedtoplevelcategory == 'all') {
-                        echo '<option value="all" selected>'.get_string('all', 'block_course_overview_campus').'</option> ';
+                    if ((string)$selectedtoplevelcategory === 'all') {
+                        echo '<option value="all" selected="selected">'.get_string('all', 'block_course_overview_campus').'</option> ';
                         $selectedtoplevelcategorydisplayed = true;
                     } else {
                         echo '<option value="all">'.get_string('all', 'block_course_overview_campus').'</option> ';
@@ -950,8 +934,8 @@ class block_course_overview_campus extends block_base {
                     // Print each top level category in filter as an option item and select selected top level category.
                     foreach ($filtertoplevelcategories as $value => $cat) {
                         // If iterated top level category is selected top level category.
-                        if ($selectedtoplevelcategory == $value) {
-                            echo '<option selected value="'.$value.'">'.$cat.'</option> ';
+                        if ((string)$selectedtoplevelcategory === (string)$value) {
+                            echo '<option value="'.$value.'" selected="selected">'.$cat.'</option> ';
                             $selectedtoplevelcategorydisplayed = true;
                         }
                         // If iterated top level category isn't selected top level category.
@@ -1361,6 +1345,7 @@ class block_course_overview_campus extends block_base {
             }
             if ($coc_config->toplevelcategorycoursefilter == true) {
                 user_preference_allow_ajax_update('block_course_overview_campus-selectedtoplevelcategory', PARAM_ALPHANUM);
+                user_preference_allow_ajax_update('block_course_overview_campus-toplevelcategoryexplicit', PARAM_INT);
             }
 
             // Include JS for hiding courses with AJAX.
@@ -1381,7 +1366,7 @@ class block_course_overview_campus extends block_base {
                         'term' => (isset($selectedterm)) ? $selectedterm : '',
                         'teacher' => (isset($selectedteacher)) ? $selectedteacher : '',
                         'category' => (isset($selectedcategory)) ? $selectedcategory : '',
-                        'toplevelcategory' => (isset($selectedtoplevelcategory)) ? $selectedtoplevelcategory : '',
+                        'toplevelcategory' => (isset($selectedtoplevelcategory)) ? (string)$selectedtoplevelcategory : '',
                     ],
                 ]; // Passing the initialsettings to the JS code is necessary for filtering the course list again when using browser 'back' button.
                 $PAGE->requires->js_call_amd('block_course_overview_campus/filter', 'initFilter', [$js_filteroptions]);

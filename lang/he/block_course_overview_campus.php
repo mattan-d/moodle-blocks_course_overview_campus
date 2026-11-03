@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['all'] = 'הכל';
 $string['defaulttoplevelcategory'] = 'קטגוריית ברירת מחדל';
-$string['defaulttoplevelcategory_desc'] = 'אם המשתמש עדיין לא בחר קטגוריית על, הקטגוריה שנבחרה כאן תופיע במסנן. אם המשתמש אינו רשום לקורסים בקטגוריה זו, יוצגו כל הקטגוריות.<br /><em>הגדרה זו מעובדת רק כאשר מסנן קטגוריית העל מופעל</em>';
+$string['defaulttoplevelcategory_desc'] = 'הקטגוריה הזו נבחרת בשדה מסנן קטגוריית העל עד שהמשתמש בוחר קטגוריה. משתמשים שעדיין לא בחרו, או שנשארו על «הכל», יראו את הקטגוריה הזו מסומנת.<br /><em>הגדרה זו מעובדת רק כאשר מסנן קטגוריית העל מופעל</em>';
 $string['settingspage_toplevelcategoryfilter'] = 'מסנן קטגוריית על';
 $string['toplevelcategory'] = 'קטגוריית על';
 $string['toplevelcategorycoursefilter'] = 'הפעלת מסנן קטגוריית על';

@@ -55,6 +55,8 @@ class provider implements \core_privacy\local\metadata\provider,
                 'privacy:metadata:preference:selectedcategory');
         $collection->add_user_preference('block_course_overview_campus-selectedtoplevelcategory',
                 'privacy:metadata:preference:selectedtoplevelcategory');
+        $collection->add_user_preference('block_course_overview_campus-toplevelcategoryexplicit',
+                'privacy:metadata:preference:toplevelcategoryexplicit');
         $collection->add_user_preference('block_course_overview_campus-hidecourse-',
                 'privacy:metadata:preference:hidecourse');
         $collection->add_user_preference('local_boostcoc-notshowncourses',
@@ -76,7 +78,8 @@ class provider implements \core_privacy\local\metadata\provider,
             $descriptionidentifier = null;
 
             // User preferences for filters.
-            if (strpos($name, 'block_course_overview_campus-selected') === 0) {
+            if (strpos($name, 'block_course_overview_campus-selected') === 0 ||
+                    $name == 'block_course_overview_campus-toplevelcategoryexplicit') {
                 if ($name == 'block_course_overview_campus-selectedterm') {
                     $descriptionidentifier = 'privacy:request:preference:selectedterm';
                 } else if ($name == 'block_course_overview_campus-selectedteacher') {
@@ -85,6 +88,8 @@ class provider implements \core_privacy\local\metadata\provider,
                     $descriptionidentifier = 'privacy:request:preference:selectedcategory';
                 } else if ($name == 'block_course_overview_campus-selectedtoplevelcategory') {
                     $descriptionidentifier = 'privacy:request:preference:selectedtoplevelcategory';
+                } else if ($name == 'block_course_overview_campus-toplevelcategoryexplicit') {
+                    $descriptionidentifier = 'privacy:request:preference:toplevelcategoryexplicit';
                 }
 
                 if ($descriptionidentifier !== null) {
